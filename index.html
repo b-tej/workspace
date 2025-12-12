@@ -10,7 +10,7 @@
   <body>
     <header class="header">
       <div class="header-left">
-        <button class="lock-btn">[?]</button>
+        <button class="lock-btn">:)</button>
       </div>
       
       <div class="header-center">
@@ -84,9 +84,8 @@
     
       <section id="draftpad" class="view">
         <h2>Draft Pad</h2>
-        <p>Start your draft here.</p>
+        <p>›	› 	You can start drafting here.<br>›	›  In Free Write mode, you can type however you want.<br>›	› 	In challenge mode, you won't be able to stop typing until you reach your word goal. Otherwise, your work will delete.<br>›	›  If you make it to your goal, you can download or lock your work in the vault.</p>
          <div id="draft-setup-screen">
-        <h2>Draft Setup</h2>
 
         <div class="draft-setup-row">
           <label for="draft-word-goal">Word Goal:</label>
@@ -127,69 +126,62 @@
 
       <section id="draftvault" class="view">
         <h2>Draft Vault</h2>
-        <p>Store your completed drafts here.</p>
-        <div id="project-view" class="hidden">
-          <h2 id="project-view-title">Project</h2>
+        <p>›	› 	This vault stores all your completed drafts...but there's a catch.<br>›	› 	It also locks them so you won't be able to see them until you write the next one!<br>›	› 	The goal is to keep you moving on to the next thing.<br>›	› 	You can download your draft once it unlocks!</p>
+        <button id="open-project-modal-btn">New Project</button>
+        <div id="project-modal" class="hidden">
+          <h3>Create a new project</h3>
 
+          <label>
+            Project name
+            <input id="project-name" />
+          </label>
+
+          <label>
+            Iteration goal
+            <input id="project-goal" type="number" value="5" min="1" />
+          </label>
+
+          <label>
+            Reveal interval
+            <input id="project-interval" type="number" value="1" min="1" />
+          </label>
+
+          <button id="save-project-btn">Create Project</button>
+      </div>
+        <div id="project-view" class="hidden">
+          <h3 id="project-view-title">Project</h3>
           <div id="draft-list" class="draft-grid"></div>
           <button id="delete-project-btn">Delete project</button>
       </div>
         <div id="project-list"></div>
-        <button id="open-project-modal-btn">New Project</button>
-        <div id="project-modal" class="hidden">
-        <h3>Create a new project</h3>
-
-        <label>
-          Project name
-          <input id="project-name" />
-        </label>
-
-        <label>
-          Iteration goal
-          <input id="project-goal" type="number" value="5" min="1" />
-        </label>
-
-        <label>
-          Reveal interval
-          <input id="project-interval" type="number" value="1" min="1" />
-        </label>
-
-        <button id="save-project-btn">Create Project</button>
-      </div>
 
       </section>
 
       <section id="breakroom" class="view">
         <h2>Breakroom</h2>
-        <p>You should take a break. Try one of these activities!</p>
+        <p>›	› 	You should take a break.<br>›	› 	Try one of these activities!</p>
          <div class="break-grid">
           <!-- Bored API -->
           <button class="break-tile" data-activity="bored">
             <div class="break-thumb">
-              🎲
+              
             </div>
-            <span class="break-title">Random Break Idea</span>
+            <span class="break-title">Hear a Joke!</span>
           </button>
 
           <button class="break-tile" data-activity="breathing">
-            <div class="break-thumb">🧘‍♀️</div>
+            <div class="break-thumb"></div>
             <span class="break-title">Breathing Exercise</span>
           </button>
 
           <button class="break-tile" data-activity="wind-game">
-            <div class="break-thumb">🎵</div>
+            <div class="break-thumb"></div>
             <span class="break-title">Wind Game</span>
           </button>
 
-          <!-- Activity 4: placeholder -->
-          <button class="break-tile" data-activity="placeholder3">
-            <div class="break-thumb">🧩</div>
-            <span class="break-title">Mini Game</span>
-          </button>
         </div>
       </section>
 
-      <!-- Shared modal overlay for all activities -->
       <div id="break-modal-backdrop" class="break-modal-backdrop">
         <div class="break-modal">
           <button id="break-modal-close" class="break-modal-close">✕</button>
@@ -197,9 +189,7 @@
           <h3 id="break-modal-title"></h3>
           <p id="break-modal-caption" class="break-modal-caption"></p>
 
-          <!-- This is where each activity's content goes -->
           <div id="break-modal-content">
-            <!-- Bored API content will be injected here -->
           </div>
         </div>
       </div>
@@ -208,7 +198,7 @@
       <section id="pomodoro" class="view">
         <h2>Pomodoro Timer</h2>
         <div class="pomodoro-screen pomodoro-setup active">
-        <h1>Use the Pomodoro technique! We suggest 20 minutes of work time and 5 minutes of break time.</h1>
+        <p>›	› 	Use the Pomodoro technique!<br>›	› 	It's suggested to take 20 minutes to work and 5 minutes for a break time.</p>
           <div class="pomodoro-panels">
           <div class="pomodoro-panel">
             <h3>Set Work Time</h3>
@@ -244,7 +234,6 @@
         </div>
         <div class="pomodoro-setup-actions">
           <button id="pomodoro-start-btn">Start</button>
-          <button id="pomodoro-sound-btn">Ringtone</button>
         </div>
       </div>
         <div class="pomodoro-screen pomodoro-work">

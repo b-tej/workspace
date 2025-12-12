@@ -60,8 +60,20 @@ document.addEventListener("DOMContentLoaded", function() {
     let currentTaskId = null;
     let currentSubtaskIndex = null;  
     
+    const pomodoroSound = new Audio("sounds/alert.mp3");
+    pomodoroSound.volume = 0.8; // optional, can adjust
+
     function getCurrentTask() {
         return tasks.find(t => t.id === currentTaskId) || null;
+    }
+
+    function playRingtone() {
+    try {
+        pomodoroSound.currentTime = 0; // restart from beginning
+        pomodoroSound.play();
+    } catch (err) {
+        console.warn("Could not play pomodoro sound:", err);
+    }
     }
 
 
@@ -293,6 +305,9 @@ document.addEventListener("DOMContentLoaded", function() {
     const headerDisplay  = document.querySelector(".pomodoro-countdown");
     const headerPauseBtn = document.querySelector(".pomodoro-pause");
 
+    const alertSound = new Audio("sounds/alert.mp3");
+    alertSound.volume = 0.7; // optional
+
     // Config (chosen in setup)
     const config = {
         workMinutes: 20,
@@ -389,6 +404,9 @@ document.addEventListener("DOMContentLoaded", function() {
             renderTime();
             stopInterval();
             setRunning(false);
+            
+            alertSound.currentTime = 0; //restart from beginning
+            alertSound.play();
 
             // Auto-advance
             if (phase === "work") {
@@ -753,6 +771,63 @@ document.addEventListener("DOMContentLoaded", () => {
         draftListEl.appendChild(card);
         });
     }
+
+    draftListEl.addEventListener("click", (event) => {
+        const card = event.target.closest(".draft-card");
+        if (!card) return;
+
+        const draftNumber = parseInt(card.dataset.draftNumber, 10);
+        if (!Number.isFinite(draftNumber)) return;
+
+        const vault = loadVault();
+        if (!currentProjectId) {
+            alert("No project selected.");
+            return;
+        }
+
+        const project = vault.projects[currentProjectId];
+        if (!project) {
+            alert("Project not found in vault.");
+            return;
+        }
+
+        const draft = project.drafts.find(d => d.number === draftNumber);
+        if (!draft) {
+            alert("Draft not found.");
+            return;
+        }
+
+        // Respect lock state
+        if (isDraftLocked(project, draftNumber)) {
+            alert("This draft is still locked.");
+            return;
+        }
+
+        const text = (draft.text || "").trim();
+        if (!text) {
+            alert("This draft is empty. Nothing to download.");
+            return;
+        }
+
+        // Build a simple filename: ProjectName_DraftN.txt
+        const safeProjectName = (project.name || "project")
+            .replace(/[^\w\d\-]+/g, "_")
+            .slice(0, 30); // avoid insane length
+
+        const filename = `${safeProjectName}_Draft${draftNumber}.txt`;
+
+        const blob = new Blob([text], { type: "text/plain" });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement("a");
+
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    });
+
 
 
     renderProjects();
@@ -1277,33 +1352,33 @@ document.addEventListener("DOMContentLoaded", () => {
         modalContent.innerHTML = '';
 
         if (activity === 'bored') {
-            modalTitle.textContent = "Here's a Break Idea";
-            modalCaption.textContent = "Try this out to give your brain a break. Generate a new one if this one's not great.";
+            modalTitle.textContent = 'Hear a Joke!';
+            modalCaption.textContent = 'A quick laugh to reset your mind.';
 
-            const ideaText = document.createElement('p');
+            const ideaText = document.createElement('p');   // main text
             ideaText.id = 'break-idea-text';
-            ideaText.textContent = 'Loading a break idea...';
 
-            const ideaMeta = document.createElement('p');
+            const ideaMeta = document.createElement('p');   // small subtext
             ideaMeta.id = 'break-idea-meta';
-            ideaMeta.style.fontSize = '0.9rem';
 
             const ideaButton = document.createElement('button');
-            ideaButton.textContent = 'New idea';
             ideaButton.id = 'break-idea-button';
-            ideaButton.style.marginTop = '0.75rem';
+            ideaButton.textContent = 'New joke';
 
+            modalContent.innerHTML = '';
             modalContent.appendChild(ideaText);
             modalContent.appendChild(ideaMeta);
             modalContent.appendChild(ideaButton);
 
-            // First fetch
+            // use JokeAPI now:
             fetchBreakIdea(ideaText, ideaMeta);
 
-            // Button gets more
             ideaButton.addEventListener('click', () => {
-            fetchBreakIdea(ideaText, ideaMeta);
+                fetchBreakIdea(ideaText, ideaMeta);
             });
+
+            modalBackdrop.classList.add('open');
+
 
         } else if (activity === 'breathing') {
             modalTitle.textContent = 'Breathing Exercise';
@@ -1339,7 +1414,7 @@ document.addEventListener("DOMContentLoaded", () => {
             modalContent.innerHTML = `
             <div class="wind-game-container">
                 <canvas id="windCanvas" width="500" height="300"></canvas>
-                <p id="wind-status">Move most particles to the left side!</p>
+                <p id="wind-status">Move most particles to the left side. (It's nearly impossible!)</p>
             </div>
             `;
 
@@ -1361,18 +1436,27 @@ document.addEventListener("DOMContentLoaded", () => {
             ideaTextEl.textContent = 'Loading...';
             ideaMetaEl.textContent = '';
 
-            fetch('https://bored-api.appbrewery.com/random')
-            .then(response => {
+            fetch('https://v2.jokeapi.dev/joke/Any?type=single&lang=en&safe-mode')
+                .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
                 return response.json();
-            })
-            .then(data => {
-                ideaTextEl.textContent = data.activity;
-                ideaMetaEl.textContent = `Type: ${data.type} • Participants: ${data.participants}`;
-            })
-            .catch(error => {
-                console.error('API ERROR:', error);
-                ideaTextEl.textContent = 'API ERROR.';
-            });
+                })
+                .then(data => {
+                if (data.error) {
+                    throw new Error(data.message || 'JokeAPI error');
+                }
+
+                //main joke text
+                ideaTextEl.textContent = data.joke;
+                ideaMetaEl.textContent = 'Category: ' + data.category;
+                })
+                .catch(err => {
+                console.error('Error fetching joke:', err);
+                ideaTextEl.textContent = 'Could not load a joke. Try again.';
+                ideaMetaEl.textContent = '';
+                });
         }
 
 
