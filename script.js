@@ -1361,7 +1361,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ideaTextEl.textContent = 'Loading...';
             ideaMetaEl.textContent = '';
 
-            fetch('https://www.boredapi.com/api/activity')
+            fetch('https://bored-api.appbrewery.com/random')
             .then(response => {
                 return response.json();
             })
